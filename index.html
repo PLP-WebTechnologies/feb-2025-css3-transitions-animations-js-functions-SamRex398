@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Advanced CSS3 Animations and JS with localStorage</title>
+    <style>
+        :root {
+            --btn-bg-color: #007bff;
+            --btn-bg-color-alt: #28a745;
+            --btn-text-color: #fff;
+            --btn-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --btn-padding: 1rem 2.5rem;
+            --btn-font-size: 1.25rem;
+            --btn-border-radius: 10px;
+            --btn-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --transition-duration: 0.4s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        #animateBtn {
+            background-color: var(--btn-bg-color);
+            color: var(--btn-text-color);
+            font-family: var(--btn-font-family);
+            padding: var(--btn-padding);
+            font-size: var(--btn-font-size);
+            border: none;
+            border-radius: var(--btn-border-radius);
+            box-shadow: var(--btn-box-shadow);
+            cursor: pointer;
+            outline: none;
+            transition: background-color var(--transition-duration) ease, transform var(--transition-duration) ease, box-shadow var(--transition-duration) ease;
+            user-select: none;
+        }
+
+        #animateBtn:hover {
+            background-color: var(--btn-bg-color-alt);
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.6);
+            transform: translateY(-3px);
+        }
+
+        #animateBtn:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 6px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Animation keyframes */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 15px 15px rgba(0, 123, 255, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* Animation classes */
+        .pulse-animation {
+            animation: pulse 0.8s ease forwards;
+        }
+
+        .shake-animation {
+            animation: shake 0.6s ease forwards;
+        }
+
+        /* Preference selector styling */
+        #preferenceContainer {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        select {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            border-color: var(--btn-bg-color-alt);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Advanced CSS3 Animations and JS with localStorage</h1>
+    <button id="animateBtn" aria-label="Animated Button">Click Me!</button>
+
+    <div id="preferenceContainer" aria-label="User Preferences">
+        <label for="animationSelect">Choose Animation Style:</label>
+        <select id="animationSelect" aria-describedby="animationHelp">
+            <option value="pulse">Pulse</option>
+            <option value="shake">Shake</option>
+        </select>
+    </div>
+
+    <script>
+        const btn = document.getElementById('animateBtn');
+        const animationSelect = document.getElementById('animationSelect');
+
+        // Load user preferences from localStorage
+        function loadPreferences() {
+            const color = localStorage.getItem('buttonColor');
+            const animation = localStorage.getItem('animationStyle');
+
+            if (color) {
+                btn.style.backgroundColor = color;
+            }
+            if (animation) {
+                animationSelect.value = animation;
+            }
+        }
+
+        // Save user preferences to localStorage
+        function savePreferences(color, animation) {
+            localStorage.setItem('buttonColor', color);
+            localStorage.setItem('animationStyle', animation);
+        }
+
+        // Trigger animation based on user preference
+        function triggerAnimation() {
+            const animationStyle = animationSelect.value;
+
+            // Remove any existing animation classes
+            btn.classList.remove('pulse-animation', 'shake-animation');
+
+            // Trigger reflow to restart animation
+            void btn.offsetWidth;
+
+            // Add the selected animation class
+            if (animationStyle === 'pulse') {
+                btn.classList.add('pulse-animation');
+            } else if (animationStyle === 'shake') {
+                btn.classList.add('shake-animation');
+            }
+
+            // Toggle button color between primary and alternate
+            const currentColor = btn.style.backgroundColor;
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg-color').trim();
+            const altColor = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg-color-alt').trim();
+
+            const newColor = currentColor === primaryColor ? altColor : primaryColor;
+            btn.style.backgroundColor = newColor;
+
+            // Save updated preferences
+            savePreferences(newColor, animationStyle);
+        }
+
+        // Event listeners
+        btn.addEventListener('click', triggerAnimation);
+        animationSelect.addEventListener('change', () => {
+            // Save animation preference immediately on change
+            savePreferences(btn.style.backgroundColor, animationSelect.value);
+        });
+
+        // Initialize preferences on page load
+        loadPreferences();
+    </script>
+</body>
+
+</html>
